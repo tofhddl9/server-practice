@@ -15,11 +15,10 @@ int main(int argc, char* argv[])
 	unsigned short serv_port;
 
 
-	if (argc != 4)
-	{
+	if (argc != 4) {
 		fprintf(stderr, "Usage : [%s] [server_ip] [server_port] [message]\n", argv[0]);
 		exit(1);
-  }
+ 	}
 	serv_ip = argv[1];
 	serv_port = atoi(argv[2]);
 	send_msg = argv[3];
@@ -41,18 +40,16 @@ int main(int argc, char* argv[])
 	}
 
 	send_msg_len = strlen(send_msg);
-  for (i=0;i<100;i++) {
-    //  이렇게 하면 총 10번 메세지 보내겠지?
-    total_recvbyte = 0;
-    if (send(clnt_sock, send_msg, send_msg_len, 0) != send_msg_len){
-      perror("send() error");
-      exit(1);
-    }
+	for (i=0;i<100;i++) {
+	//  이렇게 하면 총 10번 메세지 보내겠지?
+		total_recvbyte = 0;
+		if (send(clnt_sock, send_msg, send_msg_len, 0) != send_msg_len){
+	 	perror("send() error");
+		exit(1);
+	}
 
-    while (total_recvbyte < send_msg_len)
-    {
-      if ((recvbyte = recv(clnt_sock, recv_msg, RECV_BUFSIZE-1, 0)) <= 0)
-      {
+    while (total_recvbyte < send_msg_len) {
+      if ((recvbyte = recv(clnt_sock, recv_msg, RECV_BUFSIZE-1, 0)) <= 0){
         perror("recv() error");
         exit(1);
       }
@@ -61,7 +58,7 @@ int main(int argc, char* argv[])
       printf("Re: %s\n", recv_msg);
     }
   }
-	puts("");
-	close(clnt_sock);
-	return 0;
+      puts("");
+      close(clnt_sock);
+      return 0;
 }
