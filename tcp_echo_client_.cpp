@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
   clnt_sock = socket(PF_INET, SOCK_STREAM, 0);
   if (clnt_sock < 0){
-    perror("socket() error\n")
+    perror("socket() error\n");
     exit(1);
   }
 
@@ -46,21 +46,11 @@ int main(int argc, char* argv[])
   //  이렇게 하면 총 10번 메세지 보내겠지?
     total_recvbyte = 0;
     if (send(clnt_sock, send_msg, send_msg_len, 0) != send_msg_len){
-    perror("send() error");
-    exit(1);
-  }
-
-    while (total_recvbyte < send_msg_len) {
-      if ((recvbyte = recv(clnt_sock, recv_msg, RECV_BUFSIZE-1, 0)) <= 0){
-        perror("recv() error");
-        exit(1);
-      }
-      total_recvbyte += recvbyte;
-      recv_msg[recvbyte] = '\0';
-      printf("Re: %s\n", recv_msg);
+      perror("send() error");
+      exit(1);
     }
-  }
-      puts("");
-      close(clnt_sock);
-      return 0;
-
+ }
+ puts("");
+ close(clnt_sock);
+ return 0;
+}

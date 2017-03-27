@@ -11,23 +11,22 @@ int main(int argc, char* argv[])
 {
   struct sockaddr_in serv_addr, clnt_addr;
   int clnt_sock, i;
-  int send_msg_len;
+  int modifi_len;
   int total_recvbyte = 0, recvbyte;
-  char* serv_ip,*send_msg,recv_msg[RECV_BUFSIZE]; // recv msg 초기화 해주나? 어딨누 똥같은넘아
+  char *serv_ip,*modifi,recv_msg[RECV_BUFSIZE]={0}; 
   unsigned short serv_port;
 
-
   if (argc != 4) {
-    fprintf(stderr, "Usage : [%s] [server_ip] [server_port] [message]\n", argv[0]);
+    fprintf(stderr, "Usage : [%s] [server_ip] [server_port] [num1] [operator] [num2] \n", argv[0]);
     exit(1);
   }
   serv_ip = argv[1];
   serv_port = atoi(argv[2]);
-  send_msg = argv[3];
+  modifi = argv[3];
 
   clnt_sock = socket(PF_INET, SOCK_STREAM, 0);
   if (clnt_sock < 0){
-    perror("socket() error\n")
+    perror("socket() error\n");
     exit(1);
   }
 
@@ -41,16 +40,15 @@ int main(int argc, char* argv[])
     exit(1);
   }
 
-  send_msg_len = strlen(send_msg);
+  modifi_len = strlen(modifi);
   for (i=0;i<100;i++) {
-  //  이렇게 하면 총 10번 메세지 보내겠지?
     total_recvbyte = 0;
-    if (send(clnt_sock, send_msg, send_msg_len, 0) != send_msg_len){
-    perror("send() error");
-    exit(1);
-  }
+    if (send(clnt_sock, modifi, modifi_len, 0) != modifi_len){
+      perror("send() error");
+      exit(1);
+    }
 
-    while (total_recvbyte < send_msg_len) {
+    while (total_recvbyte < modifi_len) {
       if ((recvbyte = recv(clnt_sock, recv_msg, RECV_BUFSIZE-1, 0)) <= 0){
         perror("recv() error");
         exit(1);
@@ -63,4 +61,4 @@ int main(int argc, char* argv[])
       puts("");
       close(clnt_sock);
       return 0;
-
+}

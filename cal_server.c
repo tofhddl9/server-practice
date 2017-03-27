@@ -1,0 +1,108 @@
+#include <stdio.h> //printf, fprintf
+#include <string.h> // memset()
+#include <stdlib.h> // atoi()
+#include <unistd.h> // close()
+#include <arpa/inet.h> //sockaddr_in,inet_ntoa()
+#include <sys/socket.h> //socket() bind() connect()
+#define bufsize 1024
+
+bool readn(int fd, char* buf, int n);
+int calculate(char* modification);
+
+int main(int argc, char* argv[])
+{
+  char *modifi={0};
+  int serv_sock, clnt_sock;
+  struct sockaddr_in serv_addr, clnt_addr;
+
+  if (argc != 2) {
+    fprintf(stderr, "Usage : [ %s ] [port]\n",argv[0]);
+    exit(1);
+  }
+  //1. create socket
+  serv_sock = socket(PF_INET, SOCK_STREAM, 0); //socket(domain, type, protocol)
+  if (serv_sock < 0) {
+    perror("socket() error");
+    exit(1);
+  }
+  //2. init server_addr & fill the address struct
+  memset(&serv_addr, 0, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(atoi(argv[1])); //htons : host byte -> short?
+  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); //htonl : host byte -> long int
+  //INADDR_ANY : automatically fill the IP addr
+
+  //3. bind()
+  if (bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("bind error()");
+    exit(1);
+  }
+  //4. listen()
+  if (listen(serv_sock, 5) <0 ) {
+    perror("listen() error");
+    exit(1);
+  }
+
+  int modifi_len;
+  unsigned int clnt_addr_len;
+  while (1)
+  {
+    clnt_addr_len = sizeof(clnt_addr);
+    clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_addr, &clnt_addr_len);
+    if (clnt_sock < 0) {
+      perror("accept() error");
+      exit(1);
+    }
+    while(1)
+    {
+      if(readn(clnt_sock, modifi, 2) <= 0) break;
+      short len = *(short*) modifi_len;
+      if(readn(clnt_sock, modifi, len-2) <=0 )break;
+      modifi[len-2]=0;
+      printf("Result : %d\n",calculate(modifi));
+    }
+    close(clnt_sock);
+  }
+  return 0;
+}
+
+bool readn(int clnt_sock, char *buf, int n)
+{
+  int sp =0;
+  while(n)
+  {
+    int readed = read(clnt_sock, buf+sp, n);
+    if( readed <=0 ) return false;
+    n -= readed;
+    sp += readed;
+  }
+  return true;
+}
+
+int calculate(char* modifi)
+{
+  int idx=0, num1, num2,result;
+  char op,tmp1[30]={0},tmp2[30]={0};
+  for(;modifi[idx]!=' ';++idx)
+  {
+    tmp1[idx] = modifi[idx];
+  }
+  ++idx;
+  op = modifi[idx];
+  ++idx;
+  for(int i=0; modifi[idx]!='\0';++i)
+  {
+    tmp2[i] = modifi[idx+i];
+  }
+  num1 = atoi(tmp1);
+  num2 = atoi(tmp2);
+  if( op=='+') result = num1+num2;
+  else if(op=='-') result = num1-num2;
+  else if(op=='*') result = num1*num2;
+  else if(op=='/') result = num1/num2;
+  else{
+    perror("Input operator which in {+,-,*,/}\n");
+    return -1; // check !!
+    }
+  return result;
+}
